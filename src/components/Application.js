@@ -1,30 +1,13 @@
-import React, { useState } from "react";
-import DayList from './DayList';
+import React, { useState, useEffect } from "react";
+import DayList from "./DayList";
 import "components/Application.scss";
 import Appointment from "components/Appointment";
-
-const days = [
-  {
-    id: 1,
-    name: "Monday",
-    spots: 2,
-  },
-  {
-    id: 2,
-    name: "Tuesday",
-    spots: 5,
-  },
-  {
-    id: 3,
-    name: "Wednesday",
-    spots: 0,
-  },
-];
+import axios from "axios";
 
 const appointments = [
   {
     id: 1,
-    time: "12pm",
+    time: "12pm"
   },
   {
     id: 2,
@@ -34,13 +17,13 @@ const appointments = [
       interviewer: {
         id: 1,
         name: "Sylvia Palmer",
-        avatar: "https://i.imgur.com/LpaY82x.png",
+        avatar: "https://i.imgur.com/LpaY82x.png"
       }
     }
-  }, 
+  },
   {
     id: 3,
-    time: "6pm",
+    time: "6pm"
   },
   {
     id: 4,
@@ -50,7 +33,7 @@ const appointments = [
       interviewer: {
         id: 2,
         name: "Bob Dylan",
-        avatar: "https://i.imgur.com/LpaY82x.png",
+        avatar: "https://i.imgur.com/LpaY82x.png"
       }
     }
   }
@@ -58,15 +41,19 @@ const appointments = [
 
 export default function Application(props) {
   const [day, setDay] = useState("Monday");
+  const [days, setDays] = useState([]);
 
   let scheduleData = appointments.map(appointment => {
     return (
-      <Appointment 
-        time={appointment.time}
-        interview={appointment.interview}
-      />
-    )
-  })
+      <Appointment time={appointment.time} interview={appointment.interview} />
+    );
+  });
+
+  useEffect(() => {
+    axios.get("/api/days").then(res => {
+      setDays(res.data);
+    });
+  }, []);
 
   return (
     <main className="layout">
@@ -74,15 +61,11 @@ export default function Application(props) {
         <img
           className="sidebar--centered"
           src="images/logo.png"
-           alt="Interview Scheduler"
+          alt="Interview Scheduler"
         />
         <hr className="sidebar__separator sidebar--centered" />
         <nav className="sidebar__menu">
-          <DayList 
-            days={days}
-            day={day}
-            setDay={setDay}
-          />
+          <DayList days={days} day={day} setDay={setDay} />
         </nav>
         <img
           className="sidebar__lhl sidebar--centered"
@@ -91,9 +74,7 @@ export default function Application(props) {
         />
       </section>
       <section className="schedule">
-        <ul>
-          {scheduleData}
-        </ul>
+        <ul>{scheduleData}</ul>
       </section>
     </main>
   );
