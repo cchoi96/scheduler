@@ -2,42 +2,8 @@ import React, { useState, useEffect } from "react";
 import DayList from "./DayList";
 import "components/Application.scss";
 import Appointment from "components/Appointment";
+import getAppointmentsForDay from "../helpers/selectors.js";
 import axios from "axios";
-
-const appointments = [
-  {
-    id: 1,
-    time: "12pm"
-  },
-  {
-    id: 2,
-    time: "1pm",
-    interview: {
-      student: "Lydia Miller-Jones",
-      interviewer: {
-        id: 1,
-        name: "Sylvia Palmer",
-        avatar: "https://i.imgur.com/LpaY82x.png"
-      }
-    }
-  },
-  {
-    id: 3,
-    time: "6pm"
-  },
-  {
-    id: 4,
-    time: "10am",
-    interview: {
-      student: "Chris Choi",
-      interviewer: {
-        id: 2,
-        name: "Bob Dylan",
-        avatar: "https://i.imgur.com/LpaY82x.png"
-      }
-    }
-  }
-];
 
 export default function Application(props) {
   const [state, setState] = useState({
@@ -47,23 +13,29 @@ export default function Application(props) {
   });
 
   const setDay = day => setState({ ...state, day });
-  const setDays = days => setState(prev => ({ ...prev, days }));
 
-  const scheduleData = appointments.map(appointment => {
-    return (
-      <Appointment
-        time={appointment.time}
-        interview={appointment.interview}
-        key={appointment.id}
-      />
-    );
-  });
+  const getDaysData = axios.get("/api/days");
+  const getAppointmentData = axios.get("/api/appointments");
 
   useEffect(() => {
-    axios.get("/api/days").then(res => {
-      setDays(res.data);
+    Promise.all([getDaysData, getAppointmentData]).then(all => {
+      console.log(all);
+      const [days, appointments] = all;
+      setState(prev => ({ days: days.data, appointments: appointments.data }));
     });
   }, []);
+
+  const scheduleData = getAppointmentsForDay(state, state.day).map(
+    appointment => {
+      return (
+        <Appointment
+          time={appointment.time}
+          interview={appointment.interview}
+          key={appointment.id}
+        />
+      );
+    }
+  );
 
   return (
     <main className="layout">
