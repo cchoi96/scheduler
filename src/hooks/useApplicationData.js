@@ -44,9 +44,16 @@ const useApplicationData = () => {
           ...state.appointments,
           [action.message.id]: appointment
         };
+
+        let dayId = getDayId(action.message.id);
+        let days = updateObjectInArray(state.days, {
+          index: dayId,
+          item: state.days[dayId].spots - 1
+        });
         return {
           ...state,
-          appointments: appointments
+          appointments: appointments,
+          days: days
         };
       }
       case DELETE_DATA: {
@@ -58,9 +65,16 @@ const useApplicationData = () => {
           ...state.appointments,
           [action.message.id]: appointment
         };
+
+        let dayId = getDayId(action.message.id);
+        let days = updateObjectInArray(state.days, {
+          index: dayId,
+          item: state.days[dayId].spots + 1
+        });
         return {
           ...state,
-          appointments: appointments
+          appointments: appointments,
+          days: days
         };
       }
       default:
@@ -173,6 +187,7 @@ const useApplicationData = () => {
       const message = JSON.parse(event.data);
       if (message.type === "SET_INTERVIEW") {
         if (message.interview !== null) {
+          console.log(message);
           dispatch({ type: "UPDATE_DATA", message });
         } else {
           dispatch({ type: "DELETE_DATA", message });
