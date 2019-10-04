@@ -6,6 +6,8 @@ const useApplicationData = () => {
   const SET_APPLICATION_DATA = "SET_APPLICATION_DATA";
   const SET_INTERVIEW = "SET_INTERIVEW";
   const SET_SPOT_COUNT = "SET_COUNT";
+  const UPDATE_DATA = "UPDATE_DATA";
+  const DELETE_DATA = "DELETE_DATA";
 
   const reducer = (state, action) => {
     switch (action.type) {
@@ -26,11 +28,41 @@ const useApplicationData = () => {
           ...state,
           appointments: action.value
         };
+
       case SET_SPOT_COUNT:
         return {
           ...state,
           days: action.value
         };
+
+      case UPDATE_DATA: {
+        const appointment = {
+          ...state.appointments[action.message.id],
+          interview: { ...action.message.interview }
+        };
+        const appointments = {
+          ...state.appointments,
+          [action.message.id]: appointment
+        };
+        return {
+          ...state,
+          appointments: appointments
+        };
+      }
+      case DELETE_DATA: {
+        const appointment = {
+          ...state.appointments[action.message.id],
+          interview: null
+        };
+        const appointments = {
+          ...state.appointments,
+          [action.message.id]: appointment
+        };
+        return {
+          ...state,
+          appointments: appointments
+        };
+      }
       default:
         throw new Error(
           `Tried to reduce with unsupported action type: ${action.type}`
@@ -61,7 +93,6 @@ const useApplicationData = () => {
     } else if (appointmentId > 5) {
       dayId = 1;
     }
-    console.log(appointmentId);
     return dayId;
   };
 
@@ -93,19 +124,21 @@ const useApplicationData = () => {
             ...state.appointments[id],
             interview: { ...interview }
           };
-          console.log("State: ", state);
           const appointments = {
             ...state.appointments,
             [id]: appointment
           };
-          let dayId = getDayId(id);
-          let days = updateObjectInArray(state.days, {
-            index: dayId,
-            item: state.days[dayId].spots - 1
-          });
 
-          dispatch({ type: SET_SPOT_COUNT, value: days });
-          dispatch({ type: SET_INTERVIEW, value: appointments });
+          if (!state.appointments[id].interview) {
+            let dayId = getDayId(id);
+            let days = updateObjectInArray(state.days, {
+              index: dayId,
+              item: state.days[dayId].spots - 1
+            });
+
+            dispatch({ type: SET_SPOT_COUNT, value: days });
+            dispatch({ type: SET_INTERVIEW, value: appointments });
+          }
         }
       });
   };
@@ -131,6 +164,22 @@ const useApplicationData = () => {
       }
     });
   };
+
+  // WebSockets
+  useEffect(() => {
+    const socket = new WebSocket("ws://localhost:8001");
+    socket.onopen = event => {};
+    socket.onmessage = event => {
+      const message = JSON.parse(event.data);
+      if (message.type === "SET_INTERVIEW") {
+        if (message.interview !== null) {
+          dispatch({ type: "UPDATE_DATA", message });
+        } else {
+          dispatch({ type: "DELETE_DATA", message });
+        }
+      }
+    };
+  }, []);
 
   return {
     state,
