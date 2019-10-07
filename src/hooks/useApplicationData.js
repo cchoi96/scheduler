@@ -194,6 +194,10 @@ const useApplicationData = () => {
         }
       }
     };
+
+    return () => {
+      socket.close();
+    };
   }, []);
 
   return {
