@@ -2,7 +2,7 @@ const SET_DAY = "SET_DAY";
 const SET_APPLICATION_DATA = "SET_APPLICATION_DATA";
 const SET_INTERVIEW = "SET_INTERVIEW";
 const UPDATE_SPOTS_REMAINING = "UPDATE_SPOTS_REMAINING";
-export default function reducer(state, action) {
+function reducer(state, action) {
   switch (action.type) {
     case SET_DAY:
       return { ...state, day: action.day };
@@ -54,4 +54,10 @@ export default function reducer(state, action) {
   }
 }
 
-export { SET_DAY, SET_APPLICATION_DATA, SET_INTERVIEW, UPDATE_SPOTS_REMAINING };
+export {
+  reducer,
+  SET_DAY,
+  SET_APPLICATION_DATA,
+  SET_INTERVIEW,
+  UPDATE_SPOTS_REMAINING
+};
